@@ -29,13 +29,24 @@ def visualise_flakes(
     colors = cm.rainbow(np.linspace(0, 1, len(confident_flakes)))[:, :3] * 255
 
     image = image.copy()
-    for idx, flake in enumerate(confident_flakes):
-        flake_contour = cv2.morphologyEx(
-            flake.mask, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)
-        )
-        image[flake_contour > 0] = colors[idx]
+    H, W = image.shape[:2]
 
-        # put the text on the top right corner of the image
+    for idx, flake in enumerate(confident_flakes):
+        # Draw contour outline instead of using mask
+        if flake.contour is not None:
+            # Draw filled contour with color
+            overlay = image.copy()
+            cv2.drawContours(overlay, [flake.contour], -1, tuple(colors[idx].tolist()), -1)
+            image = cv2.addWeighted(image, 0.7, overlay, 0.3, 0)
+
+            # Draw contour outline
+            cv2.drawContours(image, [flake.contour], -1, tuple(colors[idx].tolist()), 3)
+        elif flake.bbox is not None:
+            # Fallback: draw bounding box
+            x, y, w, h = flake.bbox
+            cv2.rectangle(image, (x, y), (x+w, y+h), tuple(colors[idx].tolist()), 3)
+
+        # Put text on the top left corner
         cv2.putText(
             image,
             f"{(idx + 1):2}. {flake.thickness:1}L {int(flake.size * 0.3844**2):4}um2 {1- flake.false_positive_probability:.0%}",
@@ -46,12 +57,12 @@ def visualise_flakes(
             2,
         )
 
-        # draw a line from the text to the center of the flake
+        # Draw a line from the text to the center of the flake
         cv2.line(
             image,
             (370, 30 * (idx + 1) - 15),
             (int(flake.center[0]), int(flake.center[1])),
-            colors[idx],
+            tuple(colors[idx].tolist()),
             2,
         )
 

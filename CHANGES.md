@@ -137,6 +137,46 @@
 - 大文件（pptx, 图片）
 - 系统文件
 
+## 6. 第二轮修改（限制层数和修复可视化）
+
+### 问题1: 支持过多层数
+**位置**: MaterialDetector.__init__
+**问题**: 原先支持1-5层，但实际只确认有1L和2L的准确数据。
+**修改**:
+- 添加`supported_layers`参数，默认["1L", "2L"]
+- 只加载supported_layers中的层
+- 在config.py中定义SUPPORTED_LAYERS = ["1L", "2L"]
+
+### 问题2: mask属性实现问题
+**位置**: Flake.mask属性
+**问题**: visualise_flakes需要全图大小的mask，但原实现返回bbox大小的mask。
+**修改**:
+- 添加get_mask(image_shape)方法，可以生成全图或局部mask
+- mask属性保持bbox大小（兼容性）
+- 修改visualise_flakes直接使用contour画图，不依赖mask
+
+### 问题3: 可视化代码问题
+**位置**: demo_functions.py的visualise_flakes
+**问题**:
+- 使用了flake.mask，但mask大小不匹配
+- 颜色使用rainbow多色，example用的是单色
+**修改**:
+- 改用cv2.drawContours直接画轮廓，不用mask
+- 添加半透明填充效果
+- 保留rainbow色（如需单色可以后续改）
+
+## 7. 新增测试脚本
+
+### test_detection.py
+**位置**: demo/test_detection.py
+**目的**: 测试检测器能否输出正确格式的图像
+**用法**: `python test_detection.py input.jpg [output.jpg]`
+**功能**:
+- 加载参数文件（自动查找多个可能位置）
+- 测试单张图像检测
+- 打印每个检测到的flake的详细信息
+- 生成可视化输出
+
 ## 总结
 
 主要修复了三类问题：
@@ -146,7 +186,14 @@
 
 MaterialDetector现在可以：
 - 处理两种JSON格式
-- 检测1-5层
+- 检测1L和2L（限制到确认的层）
 - 返回完整的Flake对象
+- 生成正确格式的可视化输出
+
+可视化输出包括：
+- 彩色轮廓线（3像素宽）
+- 半透明填充
+- 左上角文字标注（序号、层数、面积、置信度）
+- 连接线从文字到薄片中心
 
 所有模块现在有基本的错误处理，不会一出错就崩溃。

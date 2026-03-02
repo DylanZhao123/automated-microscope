@@ -18,6 +18,9 @@ SIZE_THRESHOLD = 1800
 STD_THRESHOLD = 3
 CONFIDENCE_THRESHOLD = 0.5
 
+# Supported layers (limit to confirmed layers only)
+SUPPORTED_LAYERS = ["1L", "2L"]  # Only 1L and 2L are confirmed
+
 # Image cropping (adjust based on your camera setup)
 CROP_Y_START = 94
 CROP_Y_END = 1969

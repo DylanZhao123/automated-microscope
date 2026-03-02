@@ -64,6 +64,7 @@ def detect(output_dir, probability):
         size_threshold=config.SIZE_THRESHOLD,
         standard_deviation_threshold=config.STD_THRESHOLD,
         used_channels="BGR",
+        supported_layers=config.SUPPORTED_LAYERS,
     )
 
     # Load flatfield with error handling

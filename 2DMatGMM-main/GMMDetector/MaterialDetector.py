@@ -34,18 +34,43 @@ class Flake:
         """Alias for area."""
         return self.area
 
+    def get_mask(self, image_shape: Optional[Tuple[int, int]] = None) -> Optional[np.ndarray]:
+        """
+        Generate full-size mask from contour.
+
+        Args:
+            image_shape: (height, width) of the target image. If None, use bbox size.
+
+        Returns:
+            Binary mask with same size as image_shape, or bbox-sized mask if shape not provided.
+        """
+        if self.contour is None:
+            return None
+
+        if image_shape is not None:
+            # Full-size mask for the entire image
+            mask = np.zeros(image_shape, dtype=np.uint8)
+            cv2.drawContours(mask, [self.contour], -1, 255, -1)
+        elif self.bbox is not None:
+            # Bbox-sized mask (for local operations)
+            x, y, w, h = self.bbox
+            mask = np.zeros((h, w), dtype=np.uint8)
+            shifted_contour = self.contour.copy()
+            shifted_contour[:, :, 0] -= x
+            shifted_contour[:, :, 1] -= y
+            cv2.drawContours(mask, [shifted_contour], -1, 255, -1)
+        else:
+            return None
+
+        return mask
+
     @property
     def mask(self) -> Optional[np.ndarray]:
-        """Generate mask from contour if available."""
-        if self.contour is None or self.bbox is None:
-            return None
-        x, y, w, h = self.bbox
-        mask = np.zeros((h, w), dtype=np.uint8)
-        shifted_contour = self.contour.copy()
-        shifted_contour[:, :, 0] -= x
-        shifted_contour[:, :, 1] -= y
-        cv2.drawContours(mask, [shifted_contour], -1, 255, -1)
-        return mask
+        """
+        Generate bbox-sized mask for compatibility.
+        For full-size mask, use get_mask(image_shape).
+        """
+        return self.get_mask(image_shape=None)
 
 def _prep_gaussian(mu_list, cov_list, cov_floor: float):
     mu = np.array(mu_list, dtype=np.float32)
@@ -85,6 +110,7 @@ class MaterialDetector:
         standard_deviation_threshold: float = 5.0,
         used_channels: str = "BGR",
         max_components: int = 60,
+        supported_layers: Optional[List[str]] = None,
         **kwargs
     ):
         self.contrast_dict = contrast_dict or {}
@@ -92,6 +118,9 @@ class MaterialDetector:
         self.std_thr = float(standard_deviation_threshold)
         self.used_channels = used_channels
         self.max_components = int(max_components)
+
+        # Supported layers (default: 1L and 2L only)
+        self.supported_layers = supported_layers or ["1L", "2L"]
 
         # Convert std_thr to llr_threshold (higher = stricter)
         self.llr_threshold = 0.8 * self.std_thr + 1.5
@@ -123,9 +152,9 @@ class MaterialDetector:
                 self.inv_bg = np.eye(3, dtype=np.float32)
                 self.logdet_bg = 0.0
 
-            # Prepare all layer classes
+            # Prepare layer classes (only supported layers)
             self.layers = {}
-            for layer_name in ["1L", "2L", "3L", "4L", "5L"]:
+            for layer_name in self.supported_layers:
                 if layer_name in classes:
                     mu, inv_cov, logdet = _prep_gaussian(
                         classes[layer_name]["mu"],
@@ -133,6 +162,8 @@ class MaterialDetector:
                         self.cov_floor
                     )
                     self.layers[layer_name] = (mu, inv_cov, logdet)
+                else:
+                    print(f"Warning: Layer {layer_name} not found in parameter file")
 
         elif "1" in self.contrast_dict:
             # Old format: {"1": {"contrast": {...}, "covariance_matrix": [...]}, ...}
@@ -147,10 +178,17 @@ class MaterialDetector:
             self.inv_bg = np.eye(3, dtype=np.float32) * 10.0
             self.logdet_bg = -np.log(10.0) * 3
 
-            # Convert numbered layers to named layers
+            # Convert numbered layers to named layers (only supported layers)
             self.layers = {}
-            for i in range(1, 6):
-                layer_key = str(i)
+            for layer_name in self.supported_layers:
+                # Extract layer number (e.g., "1L" -> "1")
+                try:
+                    layer_num = int(layer_name[:-1])
+                    layer_key = str(layer_num)
+                except (ValueError, IndexError):
+                    print(f"Warning: Invalid layer name {layer_name}")
+                    continue
+
                 if layer_key in self.contrast_dict:
                     layer_data = self.contrast_dict[layer_key]
                     # Convert contrast to mu
@@ -164,8 +202,9 @@ class MaterialDetector:
                     cov = np.array(layer_data["covariance_matrix"], dtype=np.float32)
 
                     mu_prep, inv_cov, logdet = _prep_gaussian(mu, cov, self.cov_floor)
-                    layer_name = f"{i}L"
                     self.layers[layer_name] = (mu_prep, inv_cov, logdet)
+                else:
+                    print(f"Warning: Layer {layer_name} (key '{layer_key}') not found in parameter file")
 
         else:
             raise ValueError("Invalid contrast_dict format: must contain either 'classes' or numbered layers")
