@@ -1,0 +1,57 @@
+[
+  {
+    "input": "DSC00009.JPG",
+    "output": "processed_DSC00009.JPG",
+    "layer": "2L",
+    "confidence": 0.7242146517467558,
+    "area_um2": 478,
+    "center": [
+      586,
+      395
+    ]
+  },
+  {
+    "input": "DSC00011.JPG",
+    "output": "processed_DSC00011.JPG",
+    "layer": "2L",
+    "confidence": 0.8507898906411461,
+    "area_um2": 748,
+    "center": [
+      525,
+      877
+    ]
+  },
+  {
+    "input": "DSC00057.JPG",
+    "output": "processed_DSC00057.JPG",
+    "layer": "2L",
+    "confidence": 0.9099281250702633,
+    "area_um2": 817,
+    "center": [
+      1649,
+      609
+    ]
+  },
+  {
+    "input": "DSC00065.JPG",
+    "output": "processed_DSC00065.JPG",
+    "layer": "2L",
+    "confidence": 0.7730929818126916,
+    "area_um2": 285,
+    "center": [
+      296,
+      989
+    ]
+  },
+  {
+    "input": "DSC00074.JPG",
+    "output": "processed_DSC00074.JPG",
+    "layer": "2L",
+    "confidence": 0.9882002221828465,
+    "area_um2": 677,
+    "center": [
+      1578,
+      1404
+    ]
+  }
+]
