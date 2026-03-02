@@ -4,9 +4,25 @@ import cv2
 import json
 import queue
 import os
+import sys
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+try:
+    import config
+except ImportError:
+    # Fallback if config not imported
+    class config:
+        PARAM_FILE = "../final_f.json"
+        FLATFIELD_IMAGE = "flatfield.JPG"
+        SIZE_THRESHOLD = 1800
+        STD_THRESHOLD = 3
+        CROP_Y_START = 94
+        CROP_Y_END = 1969
+        CROP_X_START = 614
+        CROP_X_END = 2489
+        SCALE_FACTOR = 67.9
 
 import motor_functions as mf
 import edge_identify as ei
@@ -18,35 +34,74 @@ image_queue = queue.Queue()
 detected_flakes_list = []  # List to store information about detected flakes
 captured_images_list = []
 
-scale = 67.9
+scale = config.SCALE_FACTOR
 
 
 def detect(output_dir, probability):
+    """Detect flakes in captured images from queue."""
     print("Detecting has started")
-    contrast_dict = json.load(open("C:/Users/Graph/OneDrive/Desktop/automated microscope/retrain/final_f.json", "r"))
+
+    # Load parameters with error handling
+    param_file = config.PARAM_FILE
+    if not os.path.exists(param_file):
+        # Try alternative locations
+        param_file = os.path.join(os.path.dirname(__file__), "..", "final_f.json")
+    if not os.path.exists(param_file):
+        param_file = os.path.join(os.path.dirname(__file__), "..", "retrain", "final_f.json")
+    if not os.path.exists(param_file):
+        print(f"Error: Parameter file not found. Tried: {config.PARAM_FILE}")
+        return
+
+    try:
+        with open(param_file, "r") as f:
+            contrast_dict = json.load(f)
+    except Exception as e:
+        print(f"Error loading parameter file: {e}")
+        return
+
     model = MaterialDetector(
         contrast_dict=contrast_dict,
-        size_threshold=1800,
-        standard_deviation_threshold=3,
+        size_threshold=config.SIZE_THRESHOLD,
+        standard_deviation_threshold=config.STD_THRESHOLD,
         used_channels="BGR",
     )
-    flatfield = cv2.imread(r"C:\Users\Graph\OneDrive\Desktop\automated microscope\2DMatGMM-main\demo\flatfield.JPG")
+
+    # Load flatfield with error handling
+    flatfield_path = config.FLATFIELD_IMAGE
+    if not os.path.exists(flatfield_path):
+        flatfield_path = os.path.join(os.path.dirname(__file__), "flatfield.JPG")
+    if not os.path.exists(flatfield_path):
+        print(f"Warning: Flatfield image not found at {config.FLATFIELD_IMAGE}, skipping vignette correction")
+        flatfield = None
+    else:
+        flatfield = cv2.imread(flatfield_path)
 
     while True:
-        #print("detecting new image")
         try:
             image_path, X_axis, Y_axis, x_wafer, y_wafer = image_queue.get(timeout=50)
         except queue.Empty:
             break
-            
+
         image = cv2.imread(image_path)
-        #print(image_path)
-        image = remove_vignette(image, flatfield)
-        image = image[94:1969, 614:2489]
+        if image is None:
+            print(f"Error: Could not read image {image_path}")
+            continue
+
+        # Apply vignette correction if flatfield available
+        if flatfield is not None:
+            image = remove_vignette(image, flatfield)
+
+        # Crop to region of interest
+        image = image[
+            config.CROP_Y_START:config.CROP_Y_END,
+            config.CROP_X_START:config.CROP_X_END
+        ]
+
         flakes = model.detect_flakes(image)
         flag = False
 
-        flag = any((1 - flake.false_positive_probability) > probability for flake in flakes)
+        # Check if any flake meets confidence threshold
+        flag = any(flake.confidence > probability for flake in flakes)
 
         if flag:
             # Visualize and save annotated image
@@ -55,17 +110,18 @@ def detect(output_dir, probability):
                 image,
                 confidence_threshold=probability,
             )
-            
+
             output_path = os.path.join(output_dir, f"processed_{os.path.basename(image_path)}")
             cv2.imwrite(output_path, annotated_image)
-            #print("Detected new flakes and saved annotated image:", output_path)
-            
-            # Associate detected image with coordinates based on capture count
+
+            # Associate detected image with coordinates
             for flake in flakes:
-                if (1 - flake.false_positive_probability) > probability:
-                    detected_flakes_list.append((output_path, X_axis, Y_axis, flake.center, x_wafer, y_wafer))
+                if flake.confidence > probability:
+                    detected_flakes_list.append((
+                        output_path, X_axis, Y_axis, flake.center, x_wafer, y_wafer
+                    ))
             print(f"Detected flakes at X_axis={X_axis}, Y_axis={Y_axis}")
-            
+
         else:
             print(f"No flakes detected at X_axis={X_axis}, Y_axis={Y_axis}")
 

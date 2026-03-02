@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output directories
+out_vis/
+out_vis_*/
+processed_out/
+test/
+
+# Large files
+*.pptx
+*.png
+*.jpg
+*.JPG
+*.JPEG
+*.jpeg
+
+# Trials data (keep structure but not images)
+trials/*/input/*.JPG
+trials/*/input/*.jpg
+trials/*/output/*.JPG
+trials/*/output/*.jpg
+trials/*/*.png
+
+# Keep example structure
+!trials/.gitkeep
