@@ -25,46 +25,59 @@ def visualise_flakes(
         if (1 - flake.false_positive_probability) > confidence_threshold
     ]
 
-    # get a colors for each flake
-    colors = cm.rainbow(np.linspace(0, 1, len(confident_flakes)))[:, :3] * 255
+    # Only keep the best flake (highest confidence)
+    if len(confident_flakes) > 0:
+        best_flake = max(confident_flakes, key=lambda f: f.confidence)
+        confident_flakes = [best_flake]
+    else:
+        return image.copy()
+
+    # Magenta color for contour (matching the example output)
+    magenta = (255, 0, 255)
+    white = (255, 255, 255)
 
     image = image.copy()
-    H, W = image.shape[:2]
 
-    for idx, flake in enumerate(confident_flakes):
-        # Draw contour outline instead of using mask
-        if flake.contour is not None:
-            # Draw filled contour with color
-            overlay = image.copy()
-            cv2.drawContours(overlay, [flake.contour], -1, tuple(colors[idx].tolist()), -1)
-            image = cv2.addWeighted(image, 0.7, overlay, 0.3, 0)
+    # Only one flake to draw
+    flake = confident_flakes[0]
+    idx = 0
 
-            # Draw contour outline
-            cv2.drawContours(image, [flake.contour], -1, tuple(colors[idx].tolist()), 3)
-        elif flake.bbox is not None:
-            # Fallback: draw bounding box
-            x, y, w, h = flake.bbox
-            cv2.rectangle(image, (x, y), (x+w, y+h), tuple(colors[idx].tolist()), 3)
+    # Draw contour outline (no fill, just the outline)
+    if flake.contour is not None:
+        cv2.drawContours(image, [flake.contour], -1, magenta, 2)
+    elif flake.bbox is not None:
+        # Fallback: draw bounding box
+        x, y, w, h = flake.bbox
+        cv2.rectangle(image, (x, y), (x+w, y+h), magenta, 2)
 
-        # Put text on the top left corner
-        cv2.putText(
-            image,
-            f"{(idx + 1):2}. {flake.thickness:1}L {int(flake.size * 0.3844**2):4}um2 {1- flake.false_positive_probability:.0%}",
-            (10, 30 * (idx + 1)),
-            cv2.QT_FONT_NORMAL,
-            1,
-            (255, 255, 255),
-            2,
-        )
+    # Format text exactly as in the example: "1. 2L 304um2 84%"
+    area_um2 = int(flake.size * 0.3844**2)
+    confidence_pct = int((1 - flake.false_positive_probability) * 100)
+    text = f"{idx + 1}. {flake.thickness}L {area_um2}um2 {confidence_pct}%"
 
-        # Draw a line from the text to the center of the flake
-        cv2.line(
-            image,
-            (370, 30 * (idx + 1) - 15),
-            (int(flake.center[0]), int(flake.center[1])),
-            tuple(colors[idx].tolist()),
-            2,
-        )
+    # Put text on the top left corner in white
+    cv2.putText(
+        image,
+        text,
+        (10, 30),
+        cv2.QT_FONT_NORMAL,
+        1,
+        white,
+        2,
+    )
+
+    # Draw a line from the text to the center of the flake (magenta)
+    # Calculate text width to position line start
+    text_size = cv2.getTextSize(text, cv2.QT_FONT_NORMAL, 1, 2)[0]
+    line_start_x = 10 + text_size[0] + 5
+
+    cv2.line(
+        image,
+        (line_start_x, 15),
+        (int(flake.center[0]), int(flake.center[1])),
+        magenta,
+        2,
+    )
 
     return image
 
