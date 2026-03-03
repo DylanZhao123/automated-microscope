@@ -46,5 +46,6 @@ trials/*/output/*.JPG
 trials/*/output/*.jpg
 trials/*/*.png
 
-# Keep example structure
+# Keep folder structure
 !trials/.gitkeep
+!new_outputs/.gitkeep

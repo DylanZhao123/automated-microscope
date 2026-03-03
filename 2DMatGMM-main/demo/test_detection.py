@@ -135,7 +135,21 @@ def main():
         sys.exit(1)
 
     image_path = sys.argv[1]
-    output_path = sys.argv[2] if len(sys.argv) > 2 else None
+
+    # Default output directory
+    if len(sys.argv) > 2:
+        output_path = sys.argv[2]
+    else:
+        # Default to new_outputs folder
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(script_dir))
+        output_dir = os.path.join(project_root, "new_outputs")
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Generate output filename from input
+        input_filename = os.path.basename(image_path)
+        output_filename = f"processed_{input_filename}"
+        output_path = os.path.join(output_dir, output_filename)
 
     if not os.path.exists(image_path):
         print(f"Error: Image file not found: {image_path}")

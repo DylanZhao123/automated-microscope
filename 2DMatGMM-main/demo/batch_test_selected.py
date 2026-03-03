@@ -163,6 +163,13 @@ def batch_test_selected(input_dir, output_dir):
 
 if __name__ == "__main__":
     input_dir = sys.argv[1] if len(sys.argv) > 1 else "../../trials/0820_2/input"
-    output_dir = sys.argv[2] if len(sys.argv) > 2 else "./test_batch_output"
+
+    # Default output directory: new_outputs folder
+    if len(sys.argv) > 2:
+        output_dir = sys.argv[2]
+    else:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(script_dir))
+        output_dir = os.path.join(project_root, "new_outputs")
 
     batch_test_selected(input_dir, output_dir)

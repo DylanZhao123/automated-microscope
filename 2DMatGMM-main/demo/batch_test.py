@@ -173,12 +173,20 @@ def batch_test(input_dir, output_dir, num_images=5, use_flatfield=False):
 
 
 def main():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print(__doc__)
         sys.exit(1)
 
     input_dir = sys.argv[1]
-    output_dir = sys.argv[2]
+
+    # Default output directory: new_outputs folder
+    if len(sys.argv) > 2:
+        output_dir = sys.argv[2]
+    else:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(script_dir))
+        output_dir = os.path.join(project_root, "new_outputs")
+
     num_images = int(sys.argv[3]) if len(sys.argv) > 3 else 5
 
     if not os.path.exists(input_dir):
