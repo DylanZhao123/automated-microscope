@@ -13,8 +13,10 @@ import os
 import json
 import cv2
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add parent directories to path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, script_dir)
+sys.path.insert(0, os.path.dirname(script_dir))  # 2DMatGMM-main
 
 try:
     import config
