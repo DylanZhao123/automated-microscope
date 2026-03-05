@@ -44,13 +44,11 @@ def test_detection(image_path, output_path=None, use_flatfield=False):
         output_path: Path to save output (default: processed_<input_name>)
         use_flatfield: Whether to apply flatfield correction
     """
-    # Load parameter file (prefer Graphene_GMM.json - standard parameters)
+    # Load parameter file (use Graphene_GMM.json - validated and working)
     param_file = None
     for alt_path in [
         os.path.join(os.path.dirname(__file__), "..", "GMMDetector", "trained_parameters", "Graphene_GMM.json"),
         config.PARAM_FILE,
-        os.path.join(os.path.dirname(__file__), "..", "final_f.json"),
-        os.path.join(os.path.dirname(__file__), "..", "retrain", "final_f.json"),
     ]:
         if os.path.exists(alt_path):
             param_file = alt_path

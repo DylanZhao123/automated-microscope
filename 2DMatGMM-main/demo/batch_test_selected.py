@@ -64,8 +64,6 @@ def batch_test_selected(input_dir, output_dir):
     # Load parameter file
     param_file = config.PARAM_FILE
     for alt_path in [
-        os.path.join(script_dir, "..", "final_f.json"),
-        os.path.join(script_dir, "..", "retrain", "final_f.json"),
         os.path.join(script_dir, "..", "GMMDetector", "trained_parameters", "Graphene_GMM.json"),
     ]:
         if os.path.exists(alt_path):

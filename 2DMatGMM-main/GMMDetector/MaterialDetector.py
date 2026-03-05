@@ -191,12 +191,12 @@ class MaterialDetector:
 
                 if layer_key in self.contrast_dict:
                     layer_data = self.contrast_dict[layer_key]
-                    # Convert contrast to mu
+                    # Convert contrast to mu (BGR order to match OpenCV image format)
                     contrast = layer_data.get("contrast", {})
                     mu = np.array([
-                        contrast.get("r", 0.0),
+                        contrast.get("b", 0.0),
                         contrast.get("g", 0.0),
-                        contrast.get("b", 0.0)
+                        contrast.get("r", 0.0)
                     ], dtype=np.float32)
 
                     cov = np.array(layer_data["covariance_matrix"], dtype=np.float32)
