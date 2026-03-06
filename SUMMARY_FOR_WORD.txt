@@ -1,0 +1,57 @@
+Automated Microscope Detection System - Improvements Summary
+
+────────────────────────────────────────────────────────────────────
+
+ENGLISH VERSION
+
+1. Fixed Critical Bugs
+   The original code had incomplete data structures and hardcoded paths that
+   made it crash frequently and unusable on other computers. Fixed missing
+   object properties, centralized all configuration, and added error handling.
+
+2. Improved Detection Quality
+   Lowered the overly strict threshold that was missing valid flakes. Removed
+   artificial limits and enabled flatfield correction. Detection now works
+   reliably on actual microscope images.
+
+3. Matched Reference Output Format
+   Changed visualization to show only the best detection with magenta outline
+   (instead of multiple rainbow-colored ones). Fixed text spacing and line
+   positioning to exactly match the reference images.
+
+4. Added Testing Tools
+   Created scripts for single-image testing, batch processing, and automated
+   parameter conversion. All outputs now go to a centralized folder.
+
+5. Better Code Quality
+   Fixed import paths, prioritized validated parameters, and added
+   comprehensive documentation. The system is now maintainable and ready
+   for production use.
+
+
+────────────────────────────────────────────────────────────────────
+
+中文版本
+
+1. 修复了关键错误
+   原始代码有不完整的数据结构和硬编码路径，导致频繁崩溃且在其他电脑上
+   无法使用。修复了缺失的对象属性，集中了所有配置，添加了错误处理。
+
+2. 提高了检测质量
+   降低了过于严格的阈值，这个阈值会漏掉有效的薄片。移除了人为限制并
+   启用了平场校正。检测现在在实际显微镜图像上可靠工作。
+
+3. 匹配了参考输出格式
+   更改可视化为只显示最佳检测结果，使用洋红色轮廓（而非多个彩虹色的）。
+   修正了文字间距和连线位置以精确匹配参考图像。
+
+4. 添加了测试工具
+   创建了单张图片测试、批量处理和自动参数转换的脚本。所有输出现在都
+   保存到集中的文件夹。
+
+5. 更好的代码质量
+   修复了导入路径，优先使用已验证的参数，添加了全面的文档。系统现在
+   易于维护并可用于生产环境。
+
+
+────────────────────────────────────────────────────────────────────
