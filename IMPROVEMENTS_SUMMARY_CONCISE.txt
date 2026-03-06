@@ -1,0 +1,100 @@
+═══════════════════════════════════════════════════════════════════════════
+                    AUTOMATED MICROSCOPE SYSTEM IMPROVEMENTS
+═══════════════════════════════════════════════════════════════════════════
+
+ENGLISH VERSION
+───────────────────────────────────────────────────────────────────────────
+
+Bug Fixes
+─────────
+• Fixed missing Flake object properties that caused crashes
+• Removed all hardcoded file paths - created centralized config.py
+• Added proper error handling for files, serial port, and JSON parsing
+• Made parameter loader compatible with multiple JSON formats
+
+
+Detection Improvements
+──────────────────────
+• Lowered confidence threshold from 0.75 to 0.5 for better coverage
+• Removed "one flake per layer" restriction to match actual output
+• Added multi-layer support (1L-5L, currently using 1L-2L)
+• Enabled flatfield correction for better detection on real images
+
+
+Visualization Fixes
+───────────────────
+• Changed output to show only the best flake (not all detected)
+• Switched from rainbow colors to magenta outline (matching reference)
+• Fixed text format to exact specification: "1. 2L 304um2 84%"
+• Made connector line start from text end instead of fixed position
+
+
+New Features
+────────────
+• Created test_detection.py for single image testing
+• Created batch_test scripts for processing multiple images
+• Set default output to new_outputs/ folder for organization
+• Added parameter format conversion tool (convert_params.py)
+• Wrote comprehensive documentation of changes and usage
+
+
+Code Quality
+────────────
+• Fixed Python import paths so scripts run from correct directories
+• Prioritized standard Graphene_GMM.json over old parameter format
+• Made all output paths configurable with sensible defaults
+
+
+RESULT: System now runs reliably, matches reference output format exactly,
+        and is much easier to use and maintain.
+
+
+
+
+中文版本
+───────────────────────────────────────────────────────────────────────────
+
+错误修复
+────────
+• 修复了导致崩溃的Flake对象缺失属性
+• 移除所有硬编码文件路径 - 创建集中的config.py
+• 为文件、串口和JSON解析添加了适当的错误处理
+• 使参数加载器兼容多种JSON格式
+
+
+检测改进
+────────
+• 将置信度阈值从0.75降低到0.5以获得更好的覆盖率
+• 移除"每层一个薄片"的限制以匹配实际输出
+• 添加了多层支持（1L-5L，目前使用1L-2L）
+• 启用平场校正以在真实图像上获得更好的检测
+
+
+可视化修复
+──────────
+• 更改输出为仅显示最佳薄片（而非全部检测到的）
+• 从彩虹色改为洋红色轮廓（匹配参考输出）
+• 修正文字格式至精确规格："1. 2L 304um2 84%"
+• 使连接线从文字末尾开始而非固定位置
+
+
+新功能
+──────
+• 创建test_detection.py用于单张图片测试
+• 创建批量测试脚本用于处理多张图片
+• 设置默认输出到new_outputs/文件夹便于组织
+• 添加参数格式转换工具(convert_params.py)
+• 编写了全面的更改和使用文档
+
+
+代码质量
+────────
+• 修复Python导入路径使脚本可从正确目录运行
+• 优先使用标准Graphene_GMM.json而非旧参数格式
+• 使所有输出路径可配置且有合理默认值
+
+
+结果：系统现在运行可靠，精确匹配参考输出格式，并且更易于使用和维护。
+
+
+═══════════════════════════════════════════════════════════════════════════
